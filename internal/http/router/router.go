@@ -1,6 +1,7 @@
 package router
 
 import (
+	"context"
 	"net/http"
 	"time"
 
@@ -11,9 +12,21 @@ import (
 	"restaurant-inventory-api/internal/http/health"
 	"restaurant-inventory-api/internal/http/middleware"
 	"restaurant-inventory-api/internal/http/response"
+	restaurant "restaurant-inventory-api/internal/modules/restaurant"
+	"restaurant-inventory-api/internal/platform/postgres"
 )
 
-func New(cfg config.Config) *gin.Engine {
+type Pinger interface {
+	Ping(ctx context.Context) error
+}
+
+type Dependencies struct {
+	Postgres Pinger
+	Mongo    Pinger
+	Database *postgres.Client
+}
+
+func New(cfg config.Config, deps Dependencies) *gin.Engine {
 	if cfg.IsProduction() {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -35,7 +48,16 @@ func New(cfg config.Config) *gin.Engine {
 		response.Error(c, apperrors.MethodNotAllowed("method not allowed"))
 	})
 
-	healthHandler := health.NewHandler(cfg, time.Now())
+	healthHandler := health.NewHandler(cfg, time.Now(), []health.Check{
+		{
+			Name: "postgres",
+			Ping: pingFunc(deps.Postgres),
+		},
+		{
+			Name: "mongo",
+			Ping: pingFunc(deps.Mongo),
+		},
+	})
 
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
@@ -53,7 +75,16 @@ func New(cfg config.Config) *gin.Engine {
 	v1 := r.Group("/api/v1")
 	{
 		v1.GET("/health", healthHandler.API)
+		restaurant.RegisterRoutes(v1, deps.Database)
 	}
 
 	return r
+}
+
+func pingFunc(pinger Pinger) func(ctx context.Context) error {
+	if pinger == nil {
+		return nil
+	}
+
+	return pinger.Ping
 }

@@ -17,6 +17,21 @@ type Config struct {
 	IdleTimeout     time.Duration
 	ShutdownTimeout time.Duration
 	AllowedOrigins  []string
+	Postgres        PostgresConfig
+	Mongo           MongoConfig
+}
+
+type PostgresConfig struct {
+	URL             string
+	MaxOpenConns    int
+	MinOpenConns    int
+	MaxConnLifetime time.Duration
+	MaxConnIdleTime time.Duration
+}
+
+type MongoConfig struct {
+	URL      string
+	Database string
 }
 
 func Load() Config {
@@ -29,6 +44,17 @@ func Load() Config {
 		IdleTimeout:     getDurationEnv("HTTP_IDLE_TIMEOUT_SECONDS", 60*time.Second),
 		ShutdownTimeout: getDurationEnv("HTTP_SHUTDOWN_TIMEOUT_SECONDS", 10*time.Second),
 		AllowedOrigins:  getCSVEnv("CORS_ALLOWED_ORIGINS", []string{"*"}),
+		Postgres: PostgresConfig{
+			URL:             getEnv("POSTGRES_URL", ""),
+			MaxOpenConns:    getIntEnv("POSTGRES_MAX_OPEN_CONNS", 25),
+			MinOpenConns:    getIntEnv("POSTGRES_MIN_OPEN_CONNS", 2),
+			MaxConnLifetime: getDurationEnv("POSTGRES_MAX_CONN_LIFETIME_SECONDS", 1800*time.Second),
+			MaxConnIdleTime: getDurationEnv("POSTGRES_MAX_CONN_IDLE_TIME_SECONDS", 300*time.Second),
+		},
+		Mongo: MongoConfig{
+			URL:      getEnv("MONGO_URL", ""),
+			Database: getEnv("MONGO_DATABASE", "restaurant_inventory_events"),
+		},
 	}
 }
 
@@ -61,6 +87,20 @@ func getDurationEnv(key string, fallback time.Duration) time.Duration {
 	}
 
 	return time.Duration(seconds) * time.Second
+}
+
+func getIntEnv(key string, fallback int) int {
+	value := os.Getenv(key)
+	if value == "" {
+		return fallback
+	}
+
+	parsed, err := strconv.Atoi(value)
+	if err != nil || parsed < 0 {
+		return fallback
+	}
+
+	return parsed
 }
 
 func getCSVEnv(key string, fallback []string) []string {

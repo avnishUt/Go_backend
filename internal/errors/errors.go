@@ -34,6 +34,10 @@ func BadRequest(message string, details interface{}) AppError {
 	return New(http.StatusBadRequest, "BAD_REQUEST", message, details)
 }
 
+func Conflict(message string, details interface{}) AppError {
+	return New(http.StatusConflict, "CONFLICT", message, details)
+}
+
 func Unauthorized(message string) AppError {
 	return New(http.StatusUnauthorized, "UNAUTHORIZED", message, nil)
 }
@@ -44,6 +48,10 @@ func Forbidden(message string) AppError {
 
 func NotFound(message string) AppError {
 	return New(http.StatusNotFound, "NOT_FOUND", message, nil)
+}
+
+func ServiceUnavailable(message string) AppError {
+	return New(http.StatusServiceUnavailable, "SERVICE_UNAVAILABLE", message, nil)
 }
 
 func MethodNotAllowed(message string) AppError {
