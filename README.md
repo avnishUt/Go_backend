@@ -12,7 +12,7 @@ Backend service for a multi-tenant restaurant inventory, order, and payment mana
 
 ## Current Part
 
-Part 2 and Part 3 are complete:
+Part 2 through Part 6 are complete:
 
 - Go module
 - Gin HTTP server
@@ -39,6 +39,11 @@ Part 2 and Part 3 are complete:
 - Restaurant settings table
 - Restaurant module using handler/service/repository structure
 - Restaurant and branch APIs
+- User registration and login
+- JWT access tokens
+- Role model and seeded roles
+- Product categories and products
+- Inventory items and stock adjustment
 
 ## Planned Parts
 
@@ -117,6 +122,35 @@ POST  /api/v1/restaurants/:id/branches
 GET   /api/v1/restaurants/:id/branches
 GET   /api/v1/restaurants/:id/settings
 PATCH /api/v1/restaurants/:id/settings
+```
+
+Auth APIs:
+
+```text
+POST /api/v1/auth/register
+POST /api/v1/auth/login
+GET  /api/v1/auth/me
+```
+
+Product APIs:
+
+```text
+POST  /api/v1/product-categories
+GET   /api/v1/product-categories?restaurant_id=:restaurant_id
+POST  /api/v1/products
+GET   /api/v1/products?restaurant_id=:restaurant_id
+GET   /api/v1/products/:id
+PATCH /api/v1/products/:id
+```
+
+Inventory APIs:
+
+```text
+POST  /api/v1/inventory/items
+GET   /api/v1/inventory/items?restaurant_id=:restaurant_id
+GET   /api/v1/inventory/items/:id
+PATCH /api/v1/inventory/items/:id
+POST  /api/v1/inventory/items/:id/adjust
 ```
 
 Default port is `8080`. Override it with:

@@ -12,6 +12,9 @@ import (
 	"restaurant-inventory-api/internal/http/health"
 	"restaurant-inventory-api/internal/http/middleware"
 	"restaurant-inventory-api/internal/http/response"
+	"restaurant-inventory-api/internal/modules/auth"
+	"restaurant-inventory-api/internal/modules/inventory"
+	"restaurant-inventory-api/internal/modules/product"
 	restaurant "restaurant-inventory-api/internal/modules/restaurant"
 	"restaurant-inventory-api/internal/platform/postgres"
 )
@@ -75,7 +78,11 @@ func New(cfg config.Config, deps Dependencies) *gin.Engine {
 	v1 := r.Group("/api/v1")
 	{
 		v1.GET("/health", healthHandler.API)
+		auth.RegisterRoutes(v1, deps.Database, cfg.Auth)
 		restaurant.RegisterRoutes(v1, deps.Database)
+		authMiddleware := auth.Authenticate(cfg.Auth)
+		product.RegisterRoutes(v1, deps.Database, authMiddleware)
+		inventory.RegisterRoutes(v1, deps.Database, authMiddleware)
 	}
 
 	return r

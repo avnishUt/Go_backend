@@ -19,6 +19,7 @@ type Config struct {
 	AllowedOrigins  []string
 	Postgres        PostgresConfig
 	Mongo           MongoConfig
+	Auth            AuthConfig
 }
 
 type PostgresConfig struct {
@@ -32,6 +33,11 @@ type PostgresConfig struct {
 type MongoConfig struct {
 	URL      string
 	Database string
+}
+
+type AuthConfig struct {
+	JWTSecret         string
+	AccessTokenExpiry time.Duration
 }
 
 func Load() Config {
@@ -54,6 +60,10 @@ func Load() Config {
 		Mongo: MongoConfig{
 			URL:      getEnv("MONGO_URL", ""),
 			Database: getEnv("MONGO_DATABASE", "restaurant_inventory_events"),
+		},
+		Auth: AuthConfig{
+			JWTSecret:         getEnv("JWT_SECRET", "change-me-in-production"),
+			AccessTokenExpiry: getDurationEnv("JWT_ACCESS_TOKEN_EXPIRY_SECONDS", 86400*time.Second),
 		},
 	}
 }
