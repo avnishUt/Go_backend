@@ -1,0 +1,106 @@
+openapi: 3.0.3
+info:
+  title: Restaurant Inventory API
+  version: 1.0.0
+  description: Multi-tenant restaurant inventory, ordering, and payment backend.
+servers:
+  - url: http://localhost:8080/api/v1
+security:
+  - bearerAuth: []
+paths:
+  /health:
+    get:
+      summary: API health check
+      security: []
+      responses:
+        "200":
+          description: API is healthy
+  /auth/register:
+    post:
+      summary: Register user
+      security: []
+      responses:
+        "201":
+          description: User registered
+  /auth/login:
+    post:
+      summary: Login user
+      security: []
+      responses:
+        "200":
+          description: Login successful
+  /auth/me:
+    get:
+      summary: Current authenticated user
+      responses:
+        "200":
+          description: User fetched
+  /restaurants:
+    get:
+      summary: List restaurants
+      security: []
+      responses:
+        "200":
+          description: Restaurants fetched
+    post:
+      summary: Create restaurant
+      security: []
+      responses:
+        "201":
+          description: Restaurant created
+  /products:
+    get:
+      summary: List products
+      parameters:
+        - in: query
+          name: restaurant_id
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Products fetched
+    post:
+      summary: Create product
+      responses:
+        "201":
+          description: Product created
+  /inventory/transactions:
+    get:
+      summary: List inventory transactions
+      responses:
+        "200":
+          description: Inventory transactions fetched
+    post:
+      summary: Create inventory transaction
+      responses:
+        "201":
+          description: Inventory transaction created
+  /orders:
+    get:
+      summary: List orders
+      responses:
+        "200":
+          description: Orders fetched
+    post:
+      summary: Create order
+      responses:
+        "201":
+          description: Order created
+  /payments:
+    get:
+      summary: List payments
+      responses:
+        "200":
+          description: Payments fetched
+    post:
+      summary: Create payment
+      responses:
+        "201":
+          description: Payment created
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

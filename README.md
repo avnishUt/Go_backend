@@ -12,7 +12,7 @@ Backend service for a multi-tenant restaurant inventory, order, and payment mana
 
 ## Current Part
 
-Part 2 through Part 6 are complete:
+Part 1 through Part 12 are complete:
 
 - Go module
 - Gin HTTP server
@@ -44,6 +44,16 @@ Part 2 through Part 6 are complete:
 - Role model and seeded roles
 - Product categories and products
 - Inventory items and stock adjustment
+- Inventory transaction audit trail
+- Orders, order items, and order status history
+- Payments, payment transactions, and mock UPI completion
+- Security headers
+- Request body limit
+- In-memory rate limiting
+- OpenAPI starter document
+- Operations runbook
+- Architecture notes
+- Unit tests for config and middleware
 
 ## Planned Parts
 
@@ -57,6 +67,8 @@ Part 2 through Part 6 are complete:
 8. Orders and order items
 9. Payment and mock UPI flow
 10. Production hardening, docs, and tests
+11. API documentation and developer workflow
+12. Operations runbook and quality checks
 
 ## Project Structure
 
@@ -74,6 +86,7 @@ internal/platform/mongo  MongoDB client
 internal/platform/postgres PostgreSQL client
 internal/server          HTTP server lifecycle
 migrations/postgres      PostgreSQL migrations
+docs                     OpenAPI, runbook, architecture notes
 ```
 
 ## Run
@@ -102,6 +115,15 @@ make migrate-up
 ```
 
 Then export the database URL before running the app.
+
+Quality checks:
+
+```bash
+make tidy
+make test
+make build
+make docs-check
+```
 
 Health checks:
 
@@ -151,6 +173,31 @@ GET   /api/v1/inventory/items?restaurant_id=:restaurant_id
 GET   /api/v1/inventory/items/:id
 PATCH /api/v1/inventory/items/:id
 POST  /api/v1/inventory/items/:id/adjust
+```
+
+Inventory transaction APIs:
+
+```text
+POST /api/v1/inventory/transactions
+GET  /api/v1/inventory/transactions?restaurant_id=:restaurant_id
+```
+
+Order APIs:
+
+```text
+POST  /api/v1/orders
+GET   /api/v1/orders?restaurant_id=:restaurant_id
+GET   /api/v1/orders/:id
+PATCH /api/v1/orders/:id/status
+```
+
+Payment APIs:
+
+```text
+POST /api/v1/payments
+GET  /api/v1/payments?restaurant_id=:restaurant_id
+GET  /api/v1/payments/:id
+POST /api/v1/payments/:id/mock-upi/complete
 ```
 
 Default port is `8080`. Override it with:

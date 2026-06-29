@@ -20,6 +20,8 @@ type Config struct {
 	Postgres        PostgresConfig
 	Mongo           MongoConfig
 	Auth            AuthConfig
+	Security        SecurityConfig
+	RateLimit       RateLimitConfig
 }
 
 type PostgresConfig struct {
@@ -38,6 +40,15 @@ type MongoConfig struct {
 type AuthConfig struct {
 	JWTSecret         string
 	AccessTokenExpiry time.Duration
+}
+
+type SecurityConfig struct {
+	MaxBodyBytes int64
+}
+
+type RateLimitConfig struct {
+	Enabled           bool
+	RequestsPerMinute int
 }
 
 func Load() Config {
@@ -64,6 +75,13 @@ func Load() Config {
 		Auth: AuthConfig{
 			JWTSecret:         getEnv("JWT_SECRET", "change-me-in-production"),
 			AccessTokenExpiry: getDurationEnv("JWT_ACCESS_TOKEN_EXPIRY_SECONDS", 86400*time.Second),
+		},
+		Security: SecurityConfig{
+			MaxBodyBytes: int64(getIntEnv("HTTP_MAX_BODY_BYTES", 1048576)),
+		},
+		RateLimit: RateLimitConfig{
+			Enabled:           getBoolEnv("RATE_LIMIT_ENABLED", true),
+			RequestsPerMinute: getIntEnv("RATE_LIMIT_REQUESTS_PER_MINUTE", 120),
 		},
 	}
 }
@@ -111,6 +129,22 @@ func getIntEnv(key string, fallback int) int {
 	}
 
 	return parsed
+}
+
+func getBoolEnv(key string, fallback bool) bool {
+	value := strings.ToLower(strings.TrimSpace(os.Getenv(key)))
+	if value == "" {
+		return fallback
+	}
+
+	switch value {
+	case "true", "1", "yes", "y":
+		return true
+	case "false", "0", "no", "n":
+		return false
+	default:
+		return fallback
+	}
 }
 
 func getCSVEnv(key string, fallback []string) []string {

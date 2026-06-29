@@ -14,6 +14,9 @@ import (
 	"restaurant-inventory-api/internal/http/response"
 	"restaurant-inventory-api/internal/modules/auth"
 	"restaurant-inventory-api/internal/modules/inventory"
+	"restaurant-inventory-api/internal/modules/invtxn"
+	"restaurant-inventory-api/internal/modules/order"
+	"restaurant-inventory-api/internal/modules/payment"
 	"restaurant-inventory-api/internal/modules/product"
 	restaurant "restaurant-inventory-api/internal/modules/restaurant"
 	"restaurant-inventory-api/internal/platform/postgres"
@@ -40,6 +43,9 @@ func New(cfg config.Config, deps Dependencies) *gin.Engine {
 		middleware.RequestID(),
 		middleware.Logger(),
 		middleware.Recovery(),
+		middleware.SecurityHeaders(),
+		middleware.BodyLimit(cfg.Security.MaxBodyBytes),
+		middleware.RateLimit(cfg.RateLimit.Enabled, cfg.RateLimit.RequestsPerMinute),
 		middleware.CORS(cfg.AllowedOrigins),
 	)
 
@@ -83,6 +89,9 @@ func New(cfg config.Config, deps Dependencies) *gin.Engine {
 		authMiddleware := auth.Authenticate(cfg.Auth)
 		product.RegisterRoutes(v1, deps.Database, authMiddleware)
 		inventory.RegisterRoutes(v1, deps.Database, authMiddleware)
+		invtxn.RegisterRoutes(v1, deps.Database, authMiddleware)
+		order.RegisterRoutes(v1, deps.Database, authMiddleware)
+		payment.RegisterRoutes(v1, deps.Database, authMiddleware)
 	}
 
 	return r
