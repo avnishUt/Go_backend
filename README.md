@@ -12,7 +12,7 @@ Backend service for a multi-tenant restaurant inventory, order, and payment mana
 
 ## Current Part
 
-Part 1 through Part 12 are complete:
+Part 1 through Part 18 are complete:
 
 - Go module
 - Gin HTTP server
@@ -54,6 +54,16 @@ Part 1 through Part 12 are complete:
 - Operations runbook
 - Architecture notes
 - Unit tests for config and middleware
+- Bootstrap seed command
+- API audit log table and middleware
+- Dockerfile for API/migrate/seed binaries
+- Docker Compose API service
+- GitHub Actions CI workflow
+- Deployment guide
+- Runtime metrics endpoint
+- Notification outbox APIs
+- Sales summary report
+- Low-stock CSV export
 
 ## Planned Parts
 
@@ -69,11 +79,19 @@ Part 1 through Part 12 are complete:
 10. Production hardening, docs, and tests
 11. API documentation and developer workflow
 12. Operations runbook and quality checks
+13. Seed/bootstrap tooling
+14. Audit logging
+15. Deployment packaging and CI
+16. Metrics and observability
+17. Notification outbox
+18. Reports and exports
 
 ## Project Structure
 
 ```text
 cmd/api                  application entry point
+cmd/migrate              migration runner
+cmd/seed                 bootstrap seed runner
 internal/app             app bootstrap
 internal/config          environment config
 internal/errors          application error model
@@ -114,6 +132,17 @@ Run PostgreSQL migrations:
 make migrate-up
 ```
 
+Seed a restaurant admin:
+
+```bash
+go run ./cmd/seed \
+  -database "$POSTGRES_URL" \
+  -restaurant-name "Seed Restaurant" \
+  -restaurant-slug "seed-restaurant" \
+  -admin-email "seed-admin@example.com" \
+  -admin-password "password123"
+```
+
 Then export the database URL before running the app.
 
 Quality checks:
@@ -125,12 +154,19 @@ make build
 make docs-check
 ```
 
+Build container image:
+
+```bash
+docker build -t restaurant-inventory-api:local .
+```
+
 Health checks:
 
 ```text
 GET /
 GET /health
 GET /api/v1/health
+GET /metrics
 ```
 
 Restaurant tenant APIs:
@@ -198,6 +234,21 @@ POST /api/v1/payments
 GET  /api/v1/payments?restaurant_id=:restaurant_id
 GET  /api/v1/payments/:id
 POST /api/v1/payments/:id/mock-upi/complete
+```
+
+Notification APIs:
+
+```text
+POST  /api/v1/notifications
+GET   /api/v1/notifications?restaurant_id=:restaurant_id
+PATCH /api/v1/notifications/:id/status
+```
+
+Report APIs:
+
+```text
+GET /api/v1/reports/sales-summary?restaurant_id=:restaurant_id
+GET /api/v1/reports/low-stock.csv?restaurant_id=:restaurant_id
 ```
 
 Default port is `8080`. Override it with:

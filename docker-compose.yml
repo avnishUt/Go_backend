@@ -1,4 +1,21 @@
 services:
+  api:
+    build: .
+    container_name: restaurant_inventory_api
+    environment:
+      APP_ENV: development
+      PORT: 8080
+      POSTGRES_URL: postgres://restaurant_app:restaurant_secret@postgres:5432/restaurant_inventory?sslmode=disable
+      MONGO_URL: mongodb://restaurant_app:restaurant_secret@mongo:27017/restaurant_inventory_events?authSource=admin
+      JWT_SECRET: change-me-in-production
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+
   postgres:
     image: postgres:16-alpine
     container_name: restaurant_inventory_postgres

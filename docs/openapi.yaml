@@ -98,6 +98,29 @@ paths:
       responses:
         "201":
           description: Payment created
+  /notifications:
+    get:
+      summary: List notifications
+      responses:
+        "200":
+          description: Notifications fetched
+    post:
+      summary: Queue notification
+      responses:
+        "201":
+          description: Notification queued
+  /reports/sales-summary:
+    get:
+      summary: Sales summary
+      responses:
+        "200":
+          description: Sales summary fetched
+  /reports/low-stock.csv:
+    get:
+      summary: Low stock CSV export
+      responses:
+        "200":
+          description: CSV export
 components:
   securitySchemes:
     bearerAuth:
