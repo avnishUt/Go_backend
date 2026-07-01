@@ -28,6 +28,28 @@ func (s Service) Mark(ctx context.Context, id string, req MarkSentRequest) (Noti
 	return item, mapErr(err, "")
 }
 
+func (s Service) ProcessPending(ctx context.Context, limit int) (int, error) {
+	if limit <= 0 {
+		limit = 10
+	}
+
+	items, err := s.repo.Pending(ctx, limit)
+	if err != nil {
+		return 0, mapErr(err, "")
+	}
+
+	processed := 0
+	for _, item := range items {
+		_, err := s.repo.Mark(ctx, item.ID, MarkSentRequest{Status: "sent"})
+		if err != nil {
+			return processed, mapErr(err, "")
+		}
+		processed++
+	}
+
+	return processed, nil
+}
+
 func mapErr(err error, fkMsg string) error {
 	if err == nil {
 		return nil

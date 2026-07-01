@@ -72,6 +72,31 @@ func (r Repository) Mark(ctx context.Context, id string, req MarkSentRequest) (N
 	return item, err
 }
 
+func (r Repository) Pending(ctx context.Context, limit int) ([]Notification, error) {
+	rows, err := r.db.Query(ctx, `
+		SELECT id, restaurant_id, user_id, channel, recipient, subject, body, status,
+			attempts, last_error, sent_at, created_at, updated_at
+		FROM notifications
+		WHERE status = 'pending'
+		ORDER BY created_at ASC
+		LIMIT $1
+	`, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	items := make([]Notification, 0)
+	for rows.Next() {
+		var item Notification
+		if err := scan(rows, &item); err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+	return items, rows.Err()
+}
+
 func scan(rows pgx.Rows, item *Notification) error {
 	return rows.Scan(&item.ID, &item.RestaurantID, &item.UserID, &item.Channel, &item.Recipient,
 		&item.Subject, &item.Body, &item.Status, &item.Attempts, &item.LastError,
